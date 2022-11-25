@@ -11,7 +11,7 @@ if [ `isStrNonEmpty $S3_BUCKET` -ne 0 ]
 then
     TASK_STATUS=1
     logErrorMessage "S3 buckets details are not provided please check"
-elif [ `isStrNonEmpty $FILE` -ne 0 ]
+elif [ `isStrNonEmpty ${FILE_TO_BE_UPLOADED}` -ne 0 ]
 then
     TASK_STATUS=1
     logErrorMessage "File to be uploaded not provided please check"
