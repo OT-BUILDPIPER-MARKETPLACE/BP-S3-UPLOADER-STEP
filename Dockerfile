@@ -1,16 +1,14 @@
-FROM hashicorp/packer
+FROM amazon/aws-cli
 
-RUN apk add --no-cache --upgrade bash
-RUN apk add jq
-RUN apk add --no-cache aws-cli
-RUN aws --version
+RUN yum update -y 
+RUN yum install jq -y
 
 ENV SLEEP_DURATION 5s
 
 COPY build.sh .
 ADD BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
 
-ENV ACTIVITY_SUB_TASK_CODE S3_BUCKET 
+ENV ACTIVITY_SUB_TASK_CODE S3_BUCKET_UPLOADER 
 ENV FILE_DIR "."
 ENV FILE "."
 
