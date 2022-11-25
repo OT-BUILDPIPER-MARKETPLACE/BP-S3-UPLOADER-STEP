@@ -5,7 +5,12 @@ source /opt/buildpiper/shell-functions/str-functions.sh
 source /opt/buildpiper/shell-functions/file-functions.sh
 source /opt/buildpiper/shell-functions/aws-functions.sh
 
-sleep  "$SLEEP_DURATION"
+CODEBASE_LOCATION="${WORKSPACE}"/"${CODEBASE_DIR}"
+logInfoMessage "I'll do processing at [$CODEBASE_LOCATION]"
+sleep  $SLEEP_DURATION
+
+cd  "${CODEBASE_LOCATION}"
+
 TASK_STATUS=0
 
 if [ `isStrNonEmpty $S3_BUCKET` -ne 0 ]
