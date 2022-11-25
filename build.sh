@@ -24,6 +24,10 @@ elif [ `bucketExist ${S3_BUCKET}` -ne 0 ]
 then
     TASK_STATUS=1
     logErrorMessage "Unable to access S3 bucket either it doesn't exist or relevant permissions are not given please check!!!!"
+elif [ `isStrNonEmpty ${FILE_KEY}` -ne 0 ]
+then
+    TASK_STATUS=1
+    logErrorMessage "File key is not provided please check!!!!"
 fi     
 
 copyFileToS3 ${FILE_TO_BE_UPLOADED} ${S3_BUCKET} ${FILE_KEY}
