@@ -26,4 +26,5 @@ then
     logErrorMessage "Unable to access S3 bucket either it doesn't exist or relevant permissions are not given please check!!!!"
 fi     
 
+copyFileToS3 ${FILE_TO_BE_UPLOADED} ${S3_BUCKET} ${FILE_KEY}
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
