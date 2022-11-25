@@ -3,6 +3,7 @@ source /opt/buildpiper/shell-functions/functions.sh
 source /opt/buildpiper/shell-functions/log-functions.sh
 source /opt/buildpiper/shell-functions/str-functions.sh
 source /opt/buildpiper/shell-functions/file-functions.sh
+source /opt/buildpiper/shell-functions/aws-functions.sh
 
 sleep  "$SLEEP_DURATION"
 TASK_STATUS=0
@@ -19,6 +20,10 @@ elif [ `isFileExist ${FILE_TO_BE_UPLOADED}` -ne 0 ]
 then
     TASK_STATUS=1
     logErrorMessage "File to be uploaded does not exists please check"
+elif [ `bucketExist ${S3_BUCKET}` -ne 0 ]
+then
+    TASK_STATUS=1
+    logErrorMessage "Unable to access S3 bucket either it doesn't exist or relevant permissions are not given please check!!!!"
 fi     
 
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
