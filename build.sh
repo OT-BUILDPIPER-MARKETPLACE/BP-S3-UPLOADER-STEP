@@ -35,5 +35,10 @@ then
     logErrorMessage "File key is not provided please check!!!!"
 fi     
 
+logInfoMessage "Received below arguments"
+logInfoMessage "File to be uploaded: ${FILE_TO_BE_UPLOADED}"
+logInfoMessage "S3 Bucket: ${S3_BUCKET}"
+logInfoMessage "Location of file in S3 Bucket: ${FILE_KEY}"
+
 copyFileToS3 ${FILE_TO_BE_UPLOADED} ${S3_BUCKET} ${FILE_KEY}
 saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
