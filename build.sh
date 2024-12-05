@@ -12,7 +12,7 @@ sleep  $SLEEP_DURATION
 cd  "${WORKSPACE}"
 TAG=$(tail -n 1 data.properties)
 FILE_TO_BE_UPLOADED="${CODEBASE_DIR}"-"${TAG}".zip
-FILE_KEY="${CODEBASE_DIR}"-"${TAG}".zip
+FILE_KEY="${CODEBASE_DIR}/${APP_ENVIRONMENT}/${CODEBASE_DIR}"-"${TAG}".zip
 
 logInfoMessage "Received below arguments"
 logInfoMessage "File to be uploaded: ${FILE_TO_BE_UPLOADED}"
