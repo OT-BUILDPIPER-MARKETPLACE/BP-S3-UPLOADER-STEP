@@ -6,8 +6,7 @@ RUN yum install jq -y
 ADD BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
 COPY build.sh .
 
-ENV SLEEP_DURATION="5s"
-ENV ACTIVITY_SUB_TASK_CODE="S3_BUCKET_UPLOADER" 
+ENV SLEEP_DURATION="5s" 
 ENV VALIDATION_FAILURE_ACTION=""
 
 ENTRYPOINT [ "./build.sh" ]
