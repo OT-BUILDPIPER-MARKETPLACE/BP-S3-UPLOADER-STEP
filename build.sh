@@ -7,28 +7,27 @@ source /opt/buildpiper/shell-functions/str-functions.sh
 source /opt/buildpiper/shell-functions/file-functions.sh
 source /opt/buildpiper/shell-functions/aws-functions.sh
 
+source /opt/buildpiper/shell-functions/upload_files_from_csv_to_s3.sh
+source /opt/buildpiper/shell-functions/upload_json_components_to_s3.sh
+
 # Variables
 CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
 TASK_STATUS=0
 
 # Checking versions# Log received arguments
-logInfoMessage "Received arguments:"
-logInfoMessage "S3 Bucket: ${S3_BUCKET}"
-logInfoMessage "Location of file in S3 Bucket: ${FILE_KEY}"
-logInfoMessage "SEARCH_DIR: ${SEARCH_DIR}"
-logInfoMessage "SEARCH_PATTERN: ${SEARCH_PATTERN}"
-
-logInfoMessage "Checking versions..." && aws --version
-
-logInfoMessage "Starting processing at [$CODEBASE_LOCATION]"
-sleep $SLEEP_DURATION
 
 # Change to codebase location
 cd "${CODEBASE_LOCATION}" || {
     logErrorMessage "Failed to navigate to $CODEBASE_LOCATION. Directory does not exist."
-    TASK_STATUS=1
-    saveTaskStatus $TASK_STATUS "${ACTIVITY_SUB_TASK_CODE}"
+    TASK_STATUS="1"
+    saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
 }
+
+logInfoMessage "Checking versions..." && aws --version
+
+logInfoMessage "Starting processing at [$CODEBASE_LOCATION]" 
+ls -ltr
+sleep $SLEEP_DURATION
 
 # Function to assume an AWS role
 assume_role() {
@@ -62,57 +61,13 @@ unset_role() {
     logInfoMessage "Unset AWS credentials."
 }
 
+# Main script execution
+input_data="${CSV_DATA}"
+json_filepath="${JSON_FILEPATH}"
 
-# Check if SEARCH_DIR is provided
-if [ -n "${SEARCH_DIR}" ]; then
-    SEARCH_LOCATION="${CODEBASE_LOCATION}/${SEARCH_DIR}"
-    logInfoMessage "SEARCH_LOCATION is ${SEARCH_LOCATION} directory. Files in this directory are:"
-    ls -ltr ${SEARCH_LOCATION}
-
-else
-    SEARCH_LOCATION="${CODEBASE_LOCATION}"
-    logInfoMessage "SEARCH_DIR not provided. Defaulting to CODEBASE_LOCATION."
-    logInfoMessage "SEARCH_LOCATION is ${SEARCH_LOCATION}"
-    ls -ltr ${SEARCH_LOCATION}
-fi
-
-# Find files if a search pattern is provided
-if [ -n "${SEARCH_PATTERN}" ]; then
-    search_dir="${SEARCH_LOCATION}"
-    pattern="${SEARCH_PATTERN}"
-
-    logInfoMessage "Searching for files matching [$pattern] in directory [$search_dir]"
-    files_to_upload=$(find "$search_dir" -type f -name "$pattern" 2>/dev/null)
-
-    if [ -z "$files_to_upload" ]; then
-        logErrorMessage "No files matching [$pattern] found in [$search_dir]"
-        logInfoMessage "Contents of directory [$search_dir]:"
-        ls -ltr "$search_dir"
-        echo ""
-        TASK_STATUS=1
-    else
-        logInfoMessage "Files found: $(echo "$files_to_upload" | tr '\n' ', ')"
-        echo "$files_to_upload"
-    fi
-else
-    logErrorMessage "No search pattern provided. Exiting."
+if [[ -z "$input_data" && -z "$json_filepath" ]]; then
+    logErrorMessage "Either CSV_DATA or JSON_FILEPATH is required. Please provide at least one."
     TASK_STATUS=1
-fi
-
-# Validate input parameters
-if ! isStrNonEmpty "${S3_BUCKET}" > /dev/null; then
-    logErrorMessage "S3 bucket details are missing. Please check."
-    TASK_STATUS=1
-elif ! bucketExist "${S3_BUCKET}" > /dev/null; then
-    logErrorMessage "Unable to access S3 bucket ${S3_BUCKET}. Check if it exists and permissions are correct."
-    TASK_STATUS=1
-elif ! isStrNonEmpty "${FILE_KEY}" > /dev/null; then
-    logErrorMessage "File key is not provided. Please check."
-    TASK_STATUS=1
-fi
-
-# Save task status if validation failed
-if [ $TASK_STATUS -ne 0 ]; then
     saveTaskStatus $TASK_STATUS "${ACTIVITY_SUB_TASK_CODE}"
 fi
 
@@ -121,30 +76,25 @@ if [ "${ASSUME_OTHER_ROLE}" == true ]; then
     assume_role "${ACCOUNT_ID}" "${ROLE_NAME}" "${ROLE_SESSION_NAME}"
 fi
 
-# Upload each file to S3
-for file in $files_to_upload; do
-    file_name=$(basename "$file")
-    s3_key="${FILE_KEY}/${file_name}"
-    logInfoMessage "Uploading file [$file] to S3 bucket [$S3_BUCKET] at [$s3_key]"
-    logInfoMessage "aws s3 cp $file s3://${S3_BUCKET}/${s3_key}"
-
-    aws s3 cp "$file" "s3://${S3_BUCKET}/${s3_key}"
+# Call functions only if variables are not empty
+if [[ -n "$input_data" ]]; then
+    logInfoMessage "Calling upload_files_from_csv_to_s3 with: $input_data"
+    upload_files_from_csv_to_s3 "$input_data"
     TASK_STATUS=$?
+else
+    logInfoMessage "CSV_DATA is empty. Skipping upload_files_from_csv_to_s3."
+fi
 
-    if [ $TASK_STATUS -eq 0 ]; then
-        logInfoMessage "Upload done of [$file] to S3."
-        TASK_STATUS=0
-    else
-        logErrorMessage "Failed to upload [$file] to S3."
-        if [ "${ASSUME_OTHER_ROLE}" == true ]; then
-            unset_role
-        fi
-        saveTaskStatus $TASK_STATUS "${ACTIVITY_SUB_TASK_CODE}"
-    fi
-done
-
+if [[ -n "$json_filepath" ]]; then
+    logInfoMessage "Calling upload_json_components_to_s3 with: $json_filepath"
+    upload_json_components_to_s3 "$json_filepath"
+    TASK_STATUS=$?
+else
+    logInfoMessage "JSON_FILEPATH is empty. Skipping upload_json_components_to_s3."
+fi
 
 if [ "${ASSUME_OTHER_ROLE}" == true ]; then
             unset_role
-        fi
+fi
+
 saveTaskStatus $TASK_STATUS "${ACTIVITY_SUB_TASK_CODE}"

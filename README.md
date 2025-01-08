@@ -12,22 +12,38 @@ git submodule init
 git submodule update
 ```
 ```shell
-docker build -t registry.buildpiper.in/s3-uploader:<image_tag> .
+docker build -t registry.buildpiper.in/s3-uploader:multiple_push-0.8 .
 ```
 
 * Do local testing via image only
 
 ```shell
 # upload with default 
-docker run -it --rm -v $PWD:/src -e WORKSPACE=/src -e CODEBASE_DIR=/ registry.buildpiper.in/s3-uploader:<image_tag>
+docker run -it --rm -v $PWD:/src -e WORKSPACE=/src -e CODEBASE_DIR=/ registry.buildpiper.in/s3-uploader:multiple_push-0.8
 ```
 
 ```shell
 # upload with specific bucket name and file to be uploaded
-docker run -it --rm -v $PWD:/src  -e FILE_TO_BE_UPLOADED=build.sh -e S3_BUCKET=test -e WORKSPACE=/src -e CODEBASE_DIR=/ registry.buildpiper.in/s3-uploader:<image_tag>
+docker run -it --rm -v $PWD:/src \
+ -e WORKSPACE=/src -e CODEBASE_DIR=/ \
+ -e CSV_DATA="" \
+ -e VALIDATION_FAILURE_ACTION="" \
+ -e ASSUME_OTHER_ROLE="" \
+ -e S3_BUCKET="" \
+ -e JSON_FILEPATH="" \
+ -e ENV="dev" \
+ registry.buildpiper.in/s3-uploader:multiple_push-0.8
 ```
 
 ```shell
 #debug
-docker run -it --rm -v $PWD:/src -e WORKSPACE=/src -e CODEBASE_DIR=/ -e entrypoint bash registry.buildpiper.in/s3-uploader:<image_tag> 
+docker run -it --rm -v $PWD:/src \
+ -e WORKSPACE=/src -e CODEBASE_DIR=/ \
+ -e CSV_DATA="" \
+ -e VALIDATION_FAILURE_ACTION="" \
+ -e ASSUME_OTHER_ROLE="" \
+ -e S3_BUCKET="" \
+ -e JSON_FILEPATH="" \
+ -e ENV="dev" \
+ -e entrypoint bash registry.buildpiper.in/s3-uploader:multiple_push-0.8
 ```
