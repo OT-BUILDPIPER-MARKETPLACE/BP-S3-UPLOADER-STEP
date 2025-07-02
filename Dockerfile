@@ -17,7 +17,6 @@ COPY --chown=buildpiper:buildpiper BP-BASE-SHELL-STEPS /opt/buildpiper/shell-fun
 COPY --chown=buildpiper:buildpiper build.sh .
 
 ENV SLEEP_DURATION="5s"
-ENV ACTIVITY_SUB_TASK_CODE="S3_BUCKET_UPLOADER"
 ENV VALIDATION_FAILURE_ACTION=""
 
 RUN chmod +x /home/buildpiper/build.sh
