@@ -4,8 +4,6 @@ I'll let people to upload file in s3 bucket via this step
 ### Setup
 * Clone the code available at [BP-S3-UPLOADER-STEP](https://github.com/OT-BUILDPIPER-MARKETPLACE/BP-S3-UPLOADER-STEP)
 
-Here's the **`Dockerfile-ChangeLog.md`** content you can save as a `.md` file:
-
 ---
 
 ````markdown
