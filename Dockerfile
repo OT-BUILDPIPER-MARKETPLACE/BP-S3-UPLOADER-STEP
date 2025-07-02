@@ -1,16 +1,25 @@
 FROM amazon/aws-cli
 
-RUN yum update -y 
-RUN yum install jq -y
+RUN yum update -y && \
+    yum install -y jq shadow-utils && \
+    useradd -m -s /bin/bash buildpiper
 
-ADD BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
-ADD utilities /opt/buildpiper/shell-functions/
+RUN mkdir -p /opt/buildpiper/shell-functions && \
+    chown -R buildpiper:buildpiper /opt/buildpiper && \
+    chown -R buildpiper:buildpiper /home/buildpiper
 
-COPY build.sh .
 
-ENV SLEEP_DURATION="5s" 
+USER buildpiper
+
+WORKDIR /home/buildpiper
+
+COPY --chown=buildpiper:buildpiper BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
+COPY --chown=buildpiper:buildpiper build.sh .
+
+ENV SLEEP_DURATION="5s"
+ENV ACTIVITY_SUB_TASK_CODE="S3_BUCKET_UPLOADER"
 ENV VALIDATION_FAILURE_ACTION=""
-ENV ASSUME_OTHER_ROLE=""
-ENV CSV_DATA=""
 
-ENTRYPOINT [ "./build.sh" ]
+RUN chmod +x /home/buildpiper/build.sh
+
+ENTRYPOINT ["./build.sh"]
