@@ -20,4 +20,3 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-Let me know if you'd like to add semantic versioning notes, image digests, or deployment details.
