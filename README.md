@@ -59,7 +59,7 @@ WORKDIR /home/buildpiper
 ---
 
 ### 5. Used `--chown` for file copying
-
+#
 ```dockerfile
 COPY --chown=buildpiper:buildpiper BP-BASE-SHELL-STEPS /opt/buildpiper/shell-functions/
 COPY --chown=buildpiper:buildpiper build.sh .
@@ -86,3 +86,12 @@ docker run -it --rm -v $PWD:/src -v ~/.aws:/home/buildpiper/.aws  -e S3_BUCKET=b
 #debug
 docker run -it --rm -v $PWD:/src -v ~/.aws:/home/buildpiper/.aws -e S3_BUCKET=buildpiper-impl-kt-v1 -e DESTINATION_DIR=test -e FILE_NAME=/src -e PROFILE=default -e DEBUG=true non-root
 ```
+---
+
+### Docker Imgae Tag
+
+old Docker images tag:- `registry.buildpiper.in/s3-uploader-step:solv-0.0.1`
+
+new Docker images tag:- `pending`
+
+
