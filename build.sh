@@ -68,13 +68,13 @@ fi
   logInfoMessage "New Artifact Name: [$ARTIFACT_NEW_NAME]"
   mv "$ARTIFACT_PATH/$ARTIFACT_OLD_NAME" "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME"
   logInfoMessage "Artifact renamed successfully to: [${tag}-$ARTIFACT_NEW_NAME]"
-
+  logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
   logInfoMessage "Uploading to S3 Bucket: ${S3_BUCKET}"
 
 if [ -n "$PROFILE" ]; then
-  aws s3 cp "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME" "${S3_BUCKET}" --profile "$PROFILE"
+  aws s3 cp "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
 else
-  aws s3 cp "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME" "${S3_BUCKET}" 
+  aws s3 cp "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME" "s3://${S3_BUCKET}/${DESTINATION_DIR}" 
 fi
 
   TASK_STATUS=$?
@@ -98,11 +98,12 @@ fi
   cd "${WORKSPACE}/${CODEBASE_DIR}"
   logInfoMessage "File/Folder to sync: ${FILE_TO_BE_UPLOADED}"
   logInfoMessage "S3 Bucket: ${S3_BUCKET}"
+  logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
 
 if [ -n "$PROFILE" ]; then
-  aws s3 sync "${FILE_TO_BE_UPLOADED}" "${S3_BUCKET}" --profile "$PROFILE"
+  aws s3 sync "${FILE_TO_BE_UPLOADED}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
 else
-  aws s3 sync "${FILE_TO_BE_UPLOADED}" "${S3_BUCKET}"
+  aws s3 sync "${FILE_TO_BE_UPLOADED}" "s3://${S3_BUCKET}/${DESTINATION_DIR}"
 fi
   TASK_STATUS=$?
   saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
