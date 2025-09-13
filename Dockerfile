@@ -6,8 +6,8 @@ RUN yum install jq -y
 
 # Create buildpiper user & group (non-root)
 RUN yum install -y shadow-utils && \
-    groupadd -g 1001 buildpiper && \
-    useradd -u 1001 -g buildpiper -d /home/buildpiper -m buildpiper && \
+    groupadd -g 65522 buildpiper && \
+    useradd -u 65522 -g buildpiper -d /home/buildpiper -m buildpiper && \
     mkdir -p /home/buildpiper && chown -R buildpiper:buildpiper /home/buildpiper
 
 
