@@ -1,132 +1,95 @@
 #!/bin/bash
-
-# Source common functions
 source /opt/buildpiper/shell-functions/functions.sh
 source /opt/buildpiper/shell-functions/log-functions.sh
 source /opt/buildpiper/shell-functions/str-functions.sh
 source /opt/buildpiper/shell-functions/file-functions.sh
 source /opt/buildpiper/shell-functions/aws-functions.sh
 
-# Enable Debugging if required
-if [ "$DEBUG" = true ]; then
-  set -x
-fi
+CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
+logInfoMessage "I'll do processing at [$CODEBASE_LOCATION]"
+sleep  $SLEEP_DURATION
 
-# Upload Function (like upload.sh)
-uploadFile() {
-if [ "${ASSUME_ROLE}" == "true" ]; then
-    if [ $# -lt 2 ]; then
-        logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME arguments are required when ASSUME_ROLE=true"
-        logInfoMessage "Usage: $0 ACCOUNT_ID ROLE_NAME"
+if [ "$ASSUME_OTHER_ROLE" == true ]
+then
+    role_output=$(aws sts assume-role --role-arn arn:aws:iam::$ACCOUNT_ID:role/$ROLE_NAME --role-session-name $ROLE_SESSION_NAME)
+    if [ $? -ne 0 ]; then
+        echo "Failed to assume role."
         exit 1
     fi
-
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
-else
-    logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
-fi
-  logInfoMessage "Starting Upload Task"
-  logInfoMessage "CODEBASE_LOCATION: ${WORKSPACE}/${CODEBASE_DIR}"
-  sleep $SLEEP_DURATION
-  cd "${WORKSPACE}/${CODEBASE_DIR}"
-
-  if [ "$LIST" = true ]; then
-    ls -ltr
-  fi
-
-  logInfoMessage "FILE NAME: $FILE_NAME"
-  logInfoMessage "BUCKET NAME: $S3_BUCKET"
-  logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
-  logInfoMessage "AWS PROFILE: $PROFILE"
-
-if [ -n "$PROFILE" ]; then
-    aws s3 cp "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --recursive --profile "$PROFILE"
-else
-    aws s3 cp "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --recursive
-fi
-  TASK_STATUS=$?
-  saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
-}
-
-# Rename & Upload Function (like build-rename.sh)
-renameAndUpload() {
-if [ "${ASSUME_ROLE}" == "true" ]; then
-    if [ $# -lt 2 ]; then
-        logInfoMessage "Error: ACCOUNT_ID and ROLE_NAME arguments are required when ASSUME_ROLE=true"
-        logInfoMessage "Usage: $0 ACCOUNT_ID ROLE_NAME"
-        exit 1
-    fi
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
-else
-    logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
-fi
-  logInfoMessage "Starting Rename & Upload Task"
-  cd "${WORKSPACE}/${CODEBASE_DIR}"
-  tag=$(cat version)
-
-  logInfoMessage "Old Artifact Name: [$ARTIFACT_OLD_NAME]"
-  logInfoMessage "New Artifact Name: [$ARTIFACT_NEW_NAME]"
-  mv "$ARTIFACT_PATH/$ARTIFACT_OLD_NAME" "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME"
-  logInfoMessage "Artifact renamed successfully to: [${tag}-$ARTIFACT_NEW_NAME]"
-  logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
-  logInfoMessage "Uploading to S3 Bucket: ${S3_BUCKET}"
-
-if [ -n "$PROFILE" ]; then
-  aws s3 cp "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
-else
-  aws s3 cp "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME" "s3://${S3_BUCKET}/${DESTINATION_DIR}" 
+    AWS_ACCESS_KEY_ID=$(echo $role_output | jq -r '.Credentials.AccessKeyId')
+    AWS_SECRET_ACCESS_KEY=$(echo $role_output | jq -r '.Credentials.SecretAccessKey')
+    AWS_SESSION_TOKEN=$(echo $role_output | jq -r '.Credentials.SessionToken')
+    export AWS_ACCESS_KEY_ID
+    export AWS_SECRET_ACCESS_KEY
+    export AWS_SESSION_TOKEN
 fi
 
-  TASK_STATUS=$?
-  saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
-}
+cd "${CODEBASE_LOCATION}"
 
-# Sync Function (like build-sync.sh)
-syncToS3() {
-if [ "${ASSUME_ROLE}" == "true" ]; then
-    if [ $# -lt 2 ]; then
-        logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME arguments are required when ASSUME_ROLE=true"
-        logInfoMessage "Usage: $0 ACCOUNT_ID ROLE_NAME"
-        exit 1
-    fi
+TASK_STATUS=0
 
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
-else
-    logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
+if [ `isStrNonEmpty $S3_BUCKET` -ne 0 ]
+then
+    TASK_STATUS=1
+    logErrorMessage "S3 buckets details are not provided please check"
+elif [ `isStrNonEmpty ${FOLDER_TO_BE_UPLOADED}` -ne 0 ]
+then
+    TASK_STATUS=1
+    logErrorMessage "Folder to be uploaded not provided please check"
+elif [ `isFolderExist ${FOLDER_TO_BE_UPLOADED}` -ne 0 ]
+then
+    TASK_STATUS=1
+    logErrorMessage "Folder to be uploaded does not exist please check"
+elif [ `bucketExist ${S3_BUCKET}` -ne 0 ]
+then
+    TASK_STATUS=1
+    logErrorMessage "Unable to access S3 bucket either it doesn't exist or relevant permissions are not given please check!!!!"
 fi
-  logInfoMessage "Starting Sync Task"
-  cd "${WORKSPACE}/${CODEBASE_DIR}"
-  logInfoMessage "File/Folder to sync: ${FILE_TO_BE_UPLOADED}"
-  logInfoMessage "S3 Bucket: ${S3_BUCKET}"
-  logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
 
-if [ -n "$PROFILE" ]; then
-  aws s3 sync "${FILE_TO_BE_UPLOADED}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
+logInfoMessage "Received below arguments"
+logInfoMessage "File to be uploaded: ${FOLDER_TO_BE_UPLOADED}"
+logInfoMessage "S3 Bucket: ${S3_BUCKET}"
+
+# Persistent Build Number Storage in S3
+BUILD_NUMBER_FILE="build_number.txt"
+S3_BUILD_NUMBER_PATH="s3://${S3_BUCKET}/$BUILD_NUMBER_FILE"
+
+# Check if build_number.txt exists in S3
+aws s3 cp "$S3_BUILD_NUMBER_PATH" . 2>/dev/null
+if [ $? -ne 0 ]; then
+    echo 1 > "$BUILD_NUMBER_FILE"
 else
-  aws s3 sync "${FILE_TO_BE_UPLOADED}" "s3://${S3_BUCKET}/${DESTINATION_DIR}"
+    BUILD_NUMBER=$(cat "$BUILD_NUMBER_FILE")
+    BUILD_NUMBER=$((BUILD_NUMBER + 1))
+    echo "$BUILD_NUMBER" > "$BUILD_NUMBER_FILE"
 fi
-  TASK_STATUS=$?
-  saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
-}
 
-# Main execution with case options
-operation="${OPERATION}"
-case "$operation" in
-  recursive)
-    uploadFile
-    ;;
-  rename)
-    renameAndUpload
-    ;;
-  sync)
-    syncToS3
-    ;;
-  *)
-    logInfoMessage "Usage: set OPERATION={recursive|rename|sync}"
+# Upload updated build number back to S3
+aws s3 cp "$BUILD_NUMBER_FILE" "$S3_BUILD_NUMBER_PATH"
+
+CURRENT_TIME=$(date +"%Y-%m-%d-%H%M%S")
+REPO_TAG="${BUILD_NUMBER}-${CURRENT_TIME}"
+
+logInfoMessage "Generated repository tag: $REPO_TAG"
+
+# Define zip file name
+ZIP_FILE="${FOLDER_TO_BE_UPLOADED}_${REPO_TAG}.zip"
+logInfoMessage "Creating zip file: $ZIP_FILE"
+
+# Zip the specified folder
+zip -r "$ZIP_FILE" "$FOLDER_TO_BE_UPLOADED"
+if [ $? -ne 0 ]; then
+    logErrorMessage "Failed to create zip file."
     exit 1
-    ;;
-esac
+fi
+logInfoMessage "Zip file created successfully: $ZIP_FILE"
 
-#Runing comamnd
-# docker run -it --rm -e WORKSPACE=/workspace -e CODEBASE_DIR=app -e FILE_NAME=check -e S3_BUCKET=s3-bps-bucket -e DESTINATION_DIR=uploads -e PROFILE=default -e OPERATION=recursive -v $(pwd):/workspace/app -v ~/.aws:/home/buildpiper/.aws <imagename>
-
+# Upload the zip file to S3
+logInfoMessage "Uploading $ZIP_FILE to S3 bucket: $S3_BUCKET"
+copyFileToS3 "$ZIP_FILE" "$S3_BUCKET"
+if [ $? -eq 0 ]; then
+    logInfoMessage "Successfully uploaded $ZIP_FILE to S3."
+else
+    logErrorMessage "Failed to upload $ZIP_FILE to S3."
+    exit 1
+fi
