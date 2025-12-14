@@ -40,8 +40,10 @@ fi
   logInfoMessage "AWS PROFILE: $PROFILE"
 
 if [ -n "$PROFILE" ]; then
+    logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --recursive --profile $PROFILE"
     aws s3 cp "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --recursive --profile "$PROFILE"
 else
+    logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --recursive"
     aws s3 cp "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --recursive
 fi
   TASK_STATUS=$?
@@ -66,14 +68,17 @@ fi
 
   logInfoMessage "Old Artifact Name: [$ARTIFACT_OLD_NAME]"
   logInfoMessage "New Artifact Name: [$ARTIFACT_NEW_NAME]"
+  logInfoMessage "Move from $ARTIFACT_PATH/$ARTIFACT_OLD_NAME to $ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME"
   mv "$ARTIFACT_PATH/$ARTIFACT_OLD_NAME" "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME"
   logInfoMessage "Artifact renamed successfully to: [${tag}-$ARTIFACT_NEW_NAME]"
   logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
   logInfoMessage "Uploading to S3 Bucket: ${S3_BUCKET}"
 
 if [ -n "$PROFILE" ]; then
+  logInfoMessage "aws s3 cp $ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME s3://${S3_BUCKET}/${DESTINATION_DIR} --profile $PROFILE"
   aws s3 cp "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
 else
+  logInfoMessage "aws s3 cp $ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME s3://${S3_BUCKET}/${DESTINATION_DIR}"
   aws s3 cp "$ARTIFACT_PATH/${tag}-$ARTIFACT_NEW_NAME" "s3://${S3_BUCKET}/${DESTINATION_DIR}" 
 fi
 
@@ -101,8 +106,10 @@ fi
   logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
 
 if [ -n "$PROFILE" ]; then
+  logInfoMessage "aws s3 sync ${FILE_TO_BE_UPLOADED} s3://${S3_BUCKET}/${DESTINATION_DIR} --profile $PROFILE"
   aws s3 sync "${FILE_TO_BE_UPLOADED}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
 else
+  logInfoMessage "aws s3 sync ${FILE_TO_BE_UPLOADED} s3://${S3_BUCKET}/${DESTINATION_DIR}"
   aws s3 sync "${FILE_TO_BE_UPLOADED}" "s3://${S3_BUCKET}/${DESTINATION_DIR}"
 fi
   TASK_STATUS=$?
@@ -114,6 +121,7 @@ if [[ -z "$operation" ]]; then
   logErrorMessage "OPERATION is not set. Allowed values: recursive | rename | sync"
   exit 1
 else
+  logInfoMessage "OPERATION is set ${OPERATION}"
   case "$operation" in
     recursive)
       uploadFile
