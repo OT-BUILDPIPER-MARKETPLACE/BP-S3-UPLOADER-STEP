@@ -33,7 +33,7 @@ uploadSingleFile() {
   else
       logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
   fi
-  logInfoMessage "Starting Upload single file task"
+  logInfoMessage "Starting Upload Single File task"
 
   logInfoMessage "FILE NAME: $FILE_NAME"
   logInfoMessage "BUCKET NAME: $S3_BUCKET"
@@ -50,7 +50,7 @@ uploadSingleFile() {
 
 
 # Upload Function (like upload.sh)
-uploadFile() {
+uploadRecursiveFile() {
 if [ "${ASSUME_ROLE}" == "true" ]; then
     if [ $# -lt 2 ]; then
         logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME arguments are required when ASSUME_ROLE=true"
@@ -62,7 +62,7 @@ if [ "${ASSUME_ROLE}" == "true" ]; then
 else
     logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
 fi
-  logInfoMessage "Starting Upload Task"
+  logInfoMessage "Starting Upload Recursive File Task"
 
   if [ "$LIST" = true ]; then
     ls -ltr
@@ -157,8 +157,11 @@ if [[ -z "$operation" ]]; then
 else
   logInfoMessage "OPERATION is set ${OPERATION}"
   case "$operation" in
+    single)
+    uploadSingleFile
+    ;;
     recursive)
-      uploadFile
+      uploadRecursiveFile
       ;;
     rename)
       renameAndUpload
