@@ -18,7 +18,7 @@ if [ -n "$SLEEP_DURATION" ]; then
 logInfoMessage "set sleep $SLEEP_DURATION "
 fi
 
-logInfoMessage "Chnage the dir ${WORKSPACE}/${CODEBASE_DIR}"
+logInfoMessage "CODEBASE_LOCATION: ${WORKSPACE}/${CODEBASE_DIR}"
 cd "${WORKSPACE}/${CODEBASE_DIR}"
 
 uploadSingleFile() {
@@ -34,7 +34,10 @@ uploadSingleFile() {
       logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
   fi
   logInfoMessage "Starting Upload single file task"
-  logInfoMessage "CODEBASE_LOCATION: ${WORKSPACE}/${CODEBASE_DIR}"
+
+  logInfoMessage "FILE NAME: $FILE_NAME"
+  logInfoMessage "BUCKET NAME: $S3_BUCKET"
+  logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
 
   if [ -n "$PROFILE" ]; then
     logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR}/ --profile $PROFILE"
@@ -60,7 +63,6 @@ else
     logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
 fi
   logInfoMessage "Starting Upload Task"
-  logInfoMessage "CODEBASE_LOCATION: ${WORKSPACE}/${CODEBASE_DIR}"
 
   if [ "$LIST" = true ]; then
     ls -ltr
