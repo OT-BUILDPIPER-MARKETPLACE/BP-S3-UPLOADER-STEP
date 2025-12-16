@@ -212,42 +212,53 @@ downloadSync() {
   saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
 }
 
-
 operation="${OPERATION}"
+
 if [[ -z "$operation" ]]; then
-  logErrorMessage "OPERATION is not set. Allowed values: recursive | rename | sync"
+  logErrorMessage "OPERATION is not set. Allowed values:
+  UploadSingle | UploadRecursive | UploadRename | UploadSync |
+  DownloadSingle | DownloadRecursive | DownloadSync"
   exit 1
-else
-  logInfoMessage "OPERATION is set ${OPERATION}"
-  case "$operation" in
-    UploadSingle)
+fi
+
+logInfoMessage "OPERATION is set to: ${operation}"
+
+case "$operation" in
+
+  UploadSingle)
     uploadSingleFile
     ;;
-    UploadRecursive)
-      uploadRecursiveFile
-      ;;
-    UploadRename)
-      renameAndUpload
-      ;;
-    UploadSync)
-      syncToS3
-      ;;
+
+  UploadRecursive)
+    uploadRecursiveFile
+    ;;
+
+  UploadRename)
+    renameAndUpload
+    ;;
+
+  UploadSync)
+    syncToS3
+    ;;
+
   DownloadSingle)
     downloadSingleFile
     ;;
+
   DownloadRecursive)
     downloadRecursive
     ;;
+
   DownloadSync)
     downloadSync
     ;;
-      
-    *)
-      logErrorMessage "Invalid OPERATION: $operation. Allowed values: recursive | rename | sync"
-      exit 1
-      ;;
-  esac
-fi
+
+  *)
+    logErrorMessage "Invalid OPERATION: ${operation}"
+    logInfoMessage "Allowed values: UploadSingle | UploadRecursive | UploadRename | UploadSync | DownloadSingle | DownloadRecursive | DownloadSync"
+    exit 1
+    ;;
+esac
 
 #Runing comamnd
 # docker run -it --rm -e WORKSPACE=/workspace -e CODEBASE_DIR=app -e FILE_NAME=check -e S3_BUCKET=s3-bps-bucket -e DESTINATION_DIR=uploads -e PROFILE=default -e OPERATION=recursive -v $(pwd):/workspace/app -v ~/.aws:/home/buildpiper/.aws <imagename>
