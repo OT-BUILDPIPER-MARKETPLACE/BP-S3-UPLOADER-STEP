@@ -150,6 +150,69 @@ fi
   saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
 }
 
+downloadSingleFile() {
+  if [ "${ASSUME_ROLE}" == "true" ]; then
+    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+  fi
+
+  logInfoMessage "Starting Single File Download"
+  logInfoMessage "S3 FILE: s3://${S3_BUCKET}/${S3_KEY}"
+  logInfoMessage "DESTINATION: ${DESTINATION_DIR}"
+
+  mkdir -p "${DESTINATION_DIR}"
+
+  if [ -n "$PROFILE" ]; then
+    aws s3 cp "s3://${S3_BUCKET}/${S3_KEY}" "${DESTINATION_DIR}/" --profile "$PROFILE"
+  else
+    aws s3 cp "s3://${S3_BUCKET}/${S3_KEY}" "${DESTINATION_DIR}/"
+  fi
+
+  TASK_STATUS=$?
+  saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
+}
+
+
+downloadRecursive() {
+  if [ "${ASSUME_ROLE}" == "true" ]; then
+    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+  fi
+
+  logInfoMessage "Starting Recursive Download"
+  logInfoMessage "S3 PATH: s3://${S3_BUCKET}/${S3_PREFIX}"
+  logInfoMessage "DESTINATION: ${DESTINATION_DIR}"
+
+  if [ -n "$PROFILE" ]; then
+    aws s3 cp "s3://${S3_BUCKET}/${S3_PREFIX}" "${DESTINATION_DIR}" --recursive --profile "$PROFILE"
+  else
+    aws s3 cp "s3://${S3_BUCKET}/${S3_PREFIX}" "${DESTINATION_DIR}" --recursive
+  fi
+
+  TASK_STATUS=$?
+  saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
+}
+
+
+downloadSync() {
+  if [ "${ASSUME_ROLE}" == "true" ]; then
+    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+  fi
+
+  logInfoMessage "Starting Sync Download"
+  logInfoMessage "S3 PATH: s3://${S3_BUCKET}/${S3_PREFIX}"
+  logInfoMessage "DESTINATION: ${DESTINATION_DIR}"
+
+
+  if [ -n "$PROFILE" ]; then
+    aws s3 sync "s3://${S3_BUCKET}/${S3_PREFIX}" "${DESTINATION_DIR}" --profile "$PROFILE"
+  else
+    aws s3 sync "s3://${S3_BUCKET}/${S3_PREFIX}" "${DESTINATION_DIR}"
+  fi
+
+  TASK_STATUS=$?
+  saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
+}
+
+
 operation="${OPERATION}"
 if [[ -z "$operation" ]]; then
   logErrorMessage "OPERATION is not set. Allowed values: recursive | rename | sync"
@@ -157,18 +220,28 @@ if [[ -z "$operation" ]]; then
 else
   logInfoMessage "OPERATION is set ${OPERATION}"
   case "$operation" in
-    single)
+    UploadSingle)
     uploadSingleFile
     ;;
-    recursive)
+    UploadRecursive)
       uploadRecursiveFile
       ;;
-    rename)
+    UploadRename)
       renameAndUpload
       ;;
-    sync)
+    UploadSync)
       syncToS3
       ;;
+  DownloadSingle)
+    downloadSingleFile
+    ;;
+  DownloadRecursive)
+    downloadRecursive
+    ;;
+  DownloadSync)
+    downloadSync
+    ;;
+      
     *)
       logErrorMessage "Invalid OPERATION: $operation. Allowed values: recursive | rename | sync"
       exit 1
