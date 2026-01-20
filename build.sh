@@ -23,11 +23,10 @@ cd "${WORKSPACE}/${CODEBASE_DIR}"
 
 uploadSingleFile() {
   if [ "${ASSUME_ROLE}" == "true" ]; then
-      if [ $# -lt 2 ]; then
-          logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME arguments are required when ASSUME_ROLE=true"
-          logInfoMessage "Usage: $0 ACCOUNT_ID ROLE_NAME"
+    if [ -z "$ACCOUNT_ID" ] || [ -z "$ROLE_NAME" ]; then
+          logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME must be set as environment variables when ASSUME_ROLE=true"
           exit 1
-      fi
+    fi
 
       getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
   else
@@ -52,12 +51,10 @@ uploadSingleFile() {
 # Upload Function (like upload.sh)
 uploadRecursiveFile() {
 if [ "${ASSUME_ROLE}" == "true" ]; then
-    if [ $# -lt 2 ]; then
-        logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME arguments are required when ASSUME_ROLE=true"
-        logInfoMessage "Usage: $0 ACCOUNT_ID ROLE_NAME"
-        exit 1
+    if [ -z "$ACCOUNT_ID" ] || [ -z "$ROLE_NAME" ]; then
+          logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME must be set as environment variables when ASSUME_ROLE=true"
+          exit 1
     fi
-
     getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
 else
     logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
@@ -87,10 +84,9 @@ fi
 # Rename & Upload Function (like build-rename.sh)
 renameAndUpload() {
 if [ "${ASSUME_ROLE}" == "true" ]; then
-    if [ $# -lt 2 ]; then
-        logInfoMessage "Error: ACCOUNT_ID and ROLE_NAME arguments are required when ASSUME_ROLE=true"
-        logInfoMessage "Usage: $0 ACCOUNT_ID ROLE_NAME"
-        exit 1
+    if [ -z "$ACCOUNT_ID" ] || [ -z "$ROLE_NAME" ]; then
+          logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME must be set as environment variables when ASSUME_ROLE=true"
+          exit 1
     fi
     getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
 else
@@ -123,10 +119,9 @@ fi
 # Sync Function (like build-sync.sh)
 syncToS3() {
 if [ "${ASSUME_ROLE}" == "true" ]; then
-    if [ $# -lt 2 ]; then
-        logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME arguments are required when ASSUME_ROLE=true"
-        logInfoMessage "Usage: $0 ACCOUNT_ID ROLE_NAME"
-        exit 1
+    if [ -z "$ACCOUNT_ID" ] || [ -z "$ROLE_NAME" ]; then
+          logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME must be set as environment variables when ASSUME_ROLE=true"
+          exit 1
     fi
 
     getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
