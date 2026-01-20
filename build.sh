@@ -26,8 +26,8 @@ uploadSingleFile() {
           logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME must be set as environment variables when ASSUME_ROLE=true"
           exit 1
     fi
-
-      getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+      ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}"
+      getAssumeRole "$ROLE_ARN"
   else
       logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
   fi
@@ -54,7 +54,8 @@ if [ "${ASSUME_ROLE}" == "true" ]; then
           logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME must be set as environment variables when ASSUME_ROLE=true"
           exit 1
     fi
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+      ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}"
+      getAssumeRole "$ROLE_ARN"
 else
     logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
 fi
@@ -87,7 +88,8 @@ if [ "${ASSUME_ROLE}" == "true" ]; then
           logErrorMessage "Error: ACCOUNT_ID and ROLE_NAME must be set as environment variables when ASSUME_ROLE=true"
           exit 1
     fi
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+      ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}"
+      getAssumeRole "$ROLE_ARN"
 else
     logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
 fi
@@ -123,7 +125,8 @@ if [ "${ASSUME_ROLE}" == "true" ]; then
           exit 1
     fi
 
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+      ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}"
+      getAssumeRole "$ROLE_ARN"
 else
     logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
 fi
@@ -146,7 +149,8 @@ fi
 
 downloadSingleFile() {
   if [ "${ASSUME_ROLE}" == "true" ]; then
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+      ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}"
+      getAssumeRole "$ROLE_ARN"
   fi
 
   logInfoMessage "Starting Single File Download"
@@ -168,7 +172,8 @@ downloadSingleFile() {
 
 downloadRecursive() {
   if [ "${ASSUME_ROLE}" == "true" ]; then
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+      ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}"
+      getAssumeRole "$ROLE_ARN"
   fi
 
   logInfoMessage "Starting Recursive Download"
@@ -188,7 +193,8 @@ downloadRecursive() {
 
 downloadSync() {
   if [ "${ASSUME_ROLE}" == "true" ]; then
-    getAssumeRole "${ACCOUNT_ID}" "${ROLE_NAME}"
+      ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}"
+      getAssumeRole "$ROLE_ARN"
   fi
 
   logInfoMessage "Starting Sync Download"
