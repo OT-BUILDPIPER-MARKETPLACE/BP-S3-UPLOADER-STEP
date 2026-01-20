@@ -12,10 +12,9 @@ if [ "$DEBUG" = true ]; then
   set -x
 fi
 
-sleep "${SLEEP_DURATION}"
-
 if [ -n "$SLEEP_DURATION" ]; then
-logInfoMessage "set sleep $SLEEP_DURATION "
+logInfoMessage "set sleep $SLEEP_DURATION"
+sleep "${SLEEP_DURATION}"
 fi
 
 logInfoMessage "CODEBASE_LOCATION: ${WORKSPACE}/${CODEBASE_DIR}"
