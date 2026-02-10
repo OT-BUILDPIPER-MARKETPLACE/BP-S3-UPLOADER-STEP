@@ -131,17 +131,17 @@ else
     logInfoMessage "ASSUME_ROLE is not set to 'true', skipping role assumption"
 fi
   logInfoMessage "Starting Sync Task"
-  logInfoMessage "File/Folder to sync: ${FILE_TO_BE_UPLOADED}"
+  logInfoMessage "File/Folder to sync: ${FILE_NAME}"
   logInfoMessage "S3 Bucket: ${S3_BUCKET}"
   logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
 
 if [ -n "$PROFILE" ]; then
   logInfoMessage "AWS PROFILE: $PROFILE"
-  logInfoMessage "aws s3 sync ${FILE_TO_BE_UPLOADED} s3://${S3_BUCKET}/${DESTINATION_DIR} --profile $PROFILE"
-  aws s3 sync "${FILE_TO_BE_UPLOADED}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
+  logInfoMessage "aws s3 sync ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --profile $PROFILE"
+  aws s3 sync "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
 else
-  logInfoMessage "aws s3 sync ${FILE_TO_BE_UPLOADED} s3://${S3_BUCKET}/${DESTINATION_DIR}"
-  aws s3 sync "${FILE_TO_BE_UPLOADED}" "s3://${S3_BUCKET}/${DESTINATION_DIR}"
+  logInfoMessage "aws s3 sync ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR}"
+  aws s3 sync "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}"
 fi
   TASK_STATUS=$?
   saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
@@ -154,15 +154,15 @@ downloadSingleFile() {
   fi
 
   logInfoMessage "Starting Single File Download"
-  logInfoMessage "S3 FILE: s3://${S3_BUCKET}/${S3_KEY}"
+  logInfoMessage "S3 FILE: s3://${S3_BUCKET}/${FILE_NAME}"
   logInfoMessage "DESTINATION: ${DESTINATION_DIR}"
 
   mkdir -p "${DESTINATION_DIR}"
 
   if [ -n "$PROFILE" ]; then
-    aws s3 cp "s3://${S3_BUCKET}/${S3_KEY}" "${DESTINATION_DIR}/" --profile "$PROFILE"
+    aws s3 cp "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}/" --profile "$PROFILE"
   else
-    aws s3 cp "s3://${S3_BUCKET}/${S3_KEY}" "${DESTINATION_DIR}/"
+    aws s3 cp "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}/"
   fi
 
   TASK_STATUS=$?
@@ -177,13 +177,13 @@ downloadRecursive() {
   fi
 
   logInfoMessage "Starting Recursive Download"
-  logInfoMessage "S3 PATH: s3://${S3_BUCKET}/${S3_PREFIX}"
+  logInfoMessage "S3 PATH: s3://${S3_BUCKET}/${FILE_NAME}"
   logInfoMessage "DESTINATION: ${DESTINATION_DIR}"
 
   if [ -n "$PROFILE" ]; then
-    aws s3 cp "s3://${S3_BUCKET}/${S3_PREFIX}" "${DESTINATION_DIR}" --recursive --profile "$PROFILE"
+    aws s3 cp "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}" --recursive --profile "$PROFILE"
   else
-    aws s3 cp "s3://${S3_BUCKET}/${S3_PREFIX}" "${DESTINATION_DIR}" --recursive
+    aws s3 cp "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}" --recursive
   fi
 
   TASK_STATUS=$?
@@ -198,14 +198,14 @@ downloadSync() {
   fi
 
   logInfoMessage "Starting Sync Download"
-  logInfoMessage "S3 PATH: s3://${S3_BUCKET}/${S3_PREFIX}"
+  logInfoMessage "S3 PATH: s3://${S3_BUCKET}/${FILE_NAME}"
   logInfoMessage "DESTINATION: ${DESTINATION_DIR}"
 
 
   if [ -n "$PROFILE" ]; then
-    aws s3 sync "s3://${S3_BUCKET}/${S3_PREFIX}" "${DESTINATION_DIR}" --profile "$PROFILE"
+    aws s3 sync "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}" --profile "$PROFILE"
   else
-    aws s3 sync "s3://${S3_BUCKET}/${S3_PREFIX}" "${DESTINATION_DIR}"
+    aws s3 sync "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}"
   fi
 
   TASK_STATUS=$?
