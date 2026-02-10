@@ -160,9 +160,9 @@ downloadSingleFile() {
   mkdir -p "${DESTINATION_DIR}"
 
   if [ -n "$PROFILE" ]; then
-    aws s3 cp "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}/" --profile "$PROFILE"
+    aws s3 cp "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}" --profile "$PROFILE"
   else
-    aws s3 cp "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}/"
+    aws s3 cp "s3://${S3_BUCKET}/${FILE_NAME}" "${DESTINATION_DIR}"
   fi
 
   TASK_STATUS=$?
