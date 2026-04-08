@@ -44,6 +44,8 @@ uploadSingleFile() {
     logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR}"
     aws s3 cp ${FILE_NAME} "s3://${S3_BUCKET}/${DESTINATION_DIR}"
   fi
+  TASK_STATUS=$?
+  saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
 }
 
 
