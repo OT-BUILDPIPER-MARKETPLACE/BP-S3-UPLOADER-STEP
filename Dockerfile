@@ -22,8 +22,8 @@ RUN mkdir -p \
     chown -R buildpiper:buildpiper /src /bp /opt
 
 # Set environment variables
-ENV SLEEP_DURATION 5s
-ENV ACTIVITY_SUB_TASK_CODE S3_BUCKET_UPLOADER
+ENV SLEEP_DURATION=5s
+ENV ACTIVITY_SUB_TASK_CODE=S3_BUCKET_UPLOADER
 
 # Copy files with correct ownership
 COPY --chown=buildpiper:buildpiper build.sh /home/buildpiper/build.sh
