@@ -7,8 +7,10 @@ source /opt/buildpiper/shell-functions/str-functions.sh
 source /opt/buildpiper/shell-functions/file-functions.sh
 source /opt/buildpiper/shell-functions/aws-functions.sh
 
-#$JOB_NUMBER
 
+if [ "$DEBUG" = true ]; then
+  set -x
+fi
 
 if [ -n "$JOB_NUMBER" ]; then
     RELEASE_NO="$JOB_NUMBER"
@@ -22,10 +24,6 @@ else
     
 fi
 
-
-if [ "$DEBUG" = true ]; then
-  set -x
-fi
 
 if [ -n "$SLEEP_DURATION" ]; then
 logInfoMessage "set sleep $SLEEP_DURATION"
