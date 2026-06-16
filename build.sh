@@ -7,6 +7,21 @@ source /opt/buildpiper/shell-functions/str-functions.sh
 source /opt/buildpiper/shell-functions/file-functions.sh
 source /opt/buildpiper/shell-functions/aws-functions.sh
 
+#$JOB_NUMBER
+
+
+if [ -n "$JOB_NUMBER" ]; then
+    RELEASE_NO="$JOB_NUMBER"
+    logInfoMessage="Release no is equal to ${JOB_NUMBER}"
+elif [ -n "$BUILD_NUMBER" ]; then
+    RELEASE_NO="$BUILD_NUMBER"
+    logInfoMessage="Release no is equal to ${BUILD_NUMBER}"
+else
+    RELEASE_NO=""
+    logInfoMessage="Release number is not available"
+    
+fi
+
 
 if [ "$DEBUG" = true ]; then
   set -x
@@ -37,13 +52,27 @@ uploadSingleFile() {
   logInfoMessage "BUCKET NAME: $S3_BUCKET"
   logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
 
-  if [ -n "$PROFILE" ]; then
-    logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --profile $PROFILE"
-    aws s3 cp ${FILE_NAME} "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
-  else
-    logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR}"
-    aws s3 cp ${FILE_NAME} "s3://${S3_BUCKET}/${DESTINATION_DIR}"
-  fi
+    if [ "${VERSION_ENABLE}" == "true" ] && [ -n "${RELEASE_NO}" ]; then
+        S3_PATH="s3://${S3_BUCKET}/${RELEASE_NO}/${DESTINATION_DIR}"
+      else
+        S3_PATH="s3://${S3_BUCKET}/${DESTINATION_DIR}"
+    fi
+
+    if [ -n "$PROFILE" ]; then
+        logInfoMessage "aws s3 cp ${FILE_NAME} ${S3_PATH} --profile $PROFILE"
+        aws s3 cp "${FILE_NAME}" "${S3_PATH}" --profile "$PROFILE"
+      else
+        logInfoMessage "aws s3 cp ${FILE_NAME} ${S3_PATH}"
+        aws s3 cp "${FILE_NAME}" "${S3_PATH}"
+    fi
+
+  # if [ -n "$PROFILE" ]; then
+  #   logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --profile $PROFILE"
+  #   aws s3 cp ${FILE_NAME} "s3://${S3_BUCKET}/${DESTINATION_DIR}" --profile "$PROFILE"
+  # else
+  #   logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR}"
+  #   aws s3 cp ${FILE_NAME} "s3://${S3_BUCKET}/${DESTINATION_DIR}"
+  # fi
   TASK_STATUS=$?
   saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
 }
@@ -71,14 +100,28 @@ fi
   logInfoMessage "BUCKET NAME: $S3_BUCKET"
   logInfoMessage "DESTINATION DIR: $DESTINATION_DIR"
 
-if [ -n "$PROFILE" ]; then
-    logInfoMessage "AWS PROFILE: $PROFILE"
-    logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --recursive --profile $PROFILE"
-    aws s3 cp "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --recursive --profile "$PROFILE"
-else
-    logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --recursive"
-    aws s3 cp "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --recursive
-fi
+    if [ "${VERSION_ENABLE}" == "true" ] && [ -n "${RELEASE_NO}" ]; then
+        S3_PATH="s3://${S3_BUCKET}/${RELEASE_NO}/${DESTINATION_DIR}"
+      else
+        S3_PATH="s3://${S3_BUCKET}/${DESTINATION_DIR}"
+    fi
+
+    if [ -n "$PROFILE" ]; then
+        logInfoMessage "aws s3 cp ${FILE_NAME} ${S3_PATH} --profile $PROFILE"
+        aws s3 cp "${FILE_NAME}" "${S3_PATH}" --profile "$PROFILE"
+      else
+        logInfoMessage "aws s3 cp ${FILE_NAME} ${S3_PATH}"
+        aws s3 cp "${FILE_NAME}" "${S3_PATH}"
+    fi
+
+# if [ -n "$PROFILE" ]; then
+#     logInfoMessage "AWS PROFILE: $PROFILE"
+#     logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --recursive --profile $PROFILE"
+#     aws s3 cp "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --recursive --profile "$PROFILE"
+# else
+#     logInfoMessage "aws s3 cp ${FILE_NAME} s3://${S3_BUCKET}/${DESTINATION_DIR} --recursive"
+#     aws s3 cp "${FILE_NAME}" "s3://${S3_BUCKET}/${DESTINATION_DIR}" --recursive
+# fi
   TASK_STATUS=$?
   saveTaskStatus ${TASK_STATUS} ${ACTIVITY_SUB_TASK_CODE}
 }
