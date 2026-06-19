@@ -109,7 +109,7 @@ fi
         aws s3 cp "${FILE_NAME}" "${S3_PATH}" --recursive --profile "$PROFILE"
       else
         logInfoMessage "aws s3 cp ${FILE_NAME} ${S3_PATH} --recursive"
-        aws s3 cp "${FILE_NAME}" "${S3_PATH} --recursive"
+        aws s3 cp "${FILE_NAME}" "${S3_PATH}" --recursive
     fi
 
 # if [ -n "$PROFILE" ]; then
